@@ -1,0 +1,3 @@
+account-scheme-url: s3://%{account_prefix}-account-resources/account-scheme.json
+type: infrastructure
+team: %{team}
