@@ -9,7 +9,7 @@ def version
 def slavePrefix = "mmg"
 
 // constants
-def githubCredentialsId = "github-build-user"
+def githubCredentialsId = "github-credentials"
 def awsCredentialsId = "aws-credentials"
 
 // pipeline definition
@@ -71,7 +71,7 @@ def checkoutPlatformConfig() {
         ]],
         submoduleCfg: [],
         userRemoteConfigs: [[
-            credentialsId: 'github-build-user',
+            credentialsId: 'github-credentials',
             url: "https://github.com/mergermarket/%{account_prefix}-platform-config"
         ]]
     ])
