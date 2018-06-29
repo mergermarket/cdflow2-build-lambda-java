@@ -1,7 +1,7 @@
 # Infrastructure boilerplate
 
-This boilerplate can be used with the setup (see
-https://mergermarket.github.io/cdflow/guides/quick-start.html) service to create
+This boilerplate can be used with the setup service (see
+https://setup.mergermarket.it/) to create
 a minimal infrastructure type service. You must provide the following
 placeholder value:
 
