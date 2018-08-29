@@ -35,7 +35,7 @@
       <userRemoteConfigs>
         <hudson.plugins.git.UserRemoteConfig>
           <url>https://github.com/mergermarket/%{name}</url>
-          <credentialsId>github-build-user</credentialsId>
+          <credentialsId>github-credentials</credentialsId>
         </hudson.plugins.git.UserRemoteConfig>
       </userRemoteConfigs>
       <branches>
