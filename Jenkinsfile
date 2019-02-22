@@ -5,22 +5,19 @@ def commit
 def shortCommit
 def version
 
-// configuration
-def slavePrefix = "mmg"
-
 // constants
 def githubCredentialsId = "github-credentials"
 def awsCredentialsId = "aws-credentials"
 
 // pipeline definition
-release(awsCredentialsId, githubCredentialsId, slavePrefix)
-deploy("aslive", slavePrefix, githubCredentialsId, awsCredentialsId)
-deploy("live", slavePrefix, githubCredentialsId, awsCredentialsId)
+release(awsCredentialsId, githubCredentialsId)
+deploy("aslive", githubCredentialsId, awsCredentialsId)
+deploy("live", githubCredentialsId, awsCredentialsId)
 
 // perform a release - note release() must be called before calling deploy()
-def release(awsCredentialsId, githubCredentialsId, slavePrefix) {
+def release(awsCredentialsId, githubCredentialsId) {
     stage ("Release") {
-        node ("${slavePrefix}dev") {
+        node ("swarm2") {
 
             checkout scm
 
@@ -41,12 +38,10 @@ def release(awsCredentialsId, githubCredentialsId, slavePrefix) {
 }
 
 // perform a deploy
-def deploy(env, slavePrefix, githubCredentialsId, awsCredentialsId) {
-
-    account = env == "live" || env == "debug" ? "prod" : "dev"
+def deploy(env, githubCredentialsId, awsCredentialsId) {
 
     stage ("Deploy to ${env}") {
-        node ("${slavePrefix}${account}") {
+        node ("swarm2") {
             // work around "checkout scm" getting the wrong commit when stages from different commits are interleaved
             git url: remote, credentialsId: githubCredentialsId
             sh "git checkout -q ${commit}"
