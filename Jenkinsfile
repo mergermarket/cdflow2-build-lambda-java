@@ -1,73 +1,84 @@
-// vim: filetype=groovy
 // variables
-def remote
-def commit
-def shortCommit
 def version
 
-// constants
-def githubCredentialsId = "github-credentials"
-def awsCredentialsId = "aws-credentials"
+@Library(value='jenkins-shared-library', changelog=false) _
 
-// pipeline definition
-release(awsCredentialsId, githubCredentialsId)
-deploy("aslive", githubCredentialsId, awsCredentialsId)
-deploy("live", githubCredentialsId, awsCredentialsId)
-
-// perform a release - note release() must be called before calling deploy()
-def release(awsCredentialsId, githubCredentialsId) {
-    stage ("Release") {
-        node ("swarm2") {
-
-            checkout scm
-
-            remote = sh(returnStdout: true, script: "git config remote.origin.url").trim()
-            commit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
-            shortCommit = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
-            version = "${env.BUILD_NUMBER}-${shortCommit}"
-
-            checkoutPlatformConfig()
-
-            withCredentials([[$class: "UsernamePasswordMultiBinding", credentialsId: awsCredentialsId, passwordVariable: "AWS_SECRET_ACCESS_KEY", usernameVariable: "AWS_ACCESS_KEY_ID"]]) {
-                wrap([$class: "AnsiColorBuildWrapper"]) {
+pipeline {
+    options {
+        timestamps()
+        ansiColor('xterm')
+        disableConcurrentBuilds()
+    }
+    agent {
+        kubernetes {
+            label shared.getNodeLabel(env.JOB_NAME)
+            yaml shared.getPodTemplate(env.JOB_NAME)
+        }
+    }
+    environment {
+        AWS_CREDS = credentials("aws-credentials")
+        AWS_ACCESS_KEY_ID = "${env.AWS_CREDS_USR}"
+        AWS_SECRET_ACCESS_KEY = "${env.AWS_CREDS_PSW}"
+    }
+    stages {
+        stage ("Test") {
+            steps {
+                container('cdflow') {
+                    test()
+                }
+            }
+        }
+        stage ("Release") {
+            when {
+                branch "master"
+            }
+            steps {
+                container('cdflow') {
+                    script {
+                        shared.checkoutPlatformConfig("%{account_prefix}-platform-config")
+                        version = shared.getVersion(env.BUILD_NUMBER)
+                    }
                     sh "cdflow release --platform-config ./platform-config ${version}"
                 }
             }
         }
-    }
-}
-
-// perform a deploy
-def deploy(env, githubCredentialsId, awsCredentialsId) {
-
-    stage ("Deploy to ${env}") {
-        node ("swarm2") {
-            // work around "checkout scm" getting the wrong commit when stages from different commits are interleaved
-            git url: remote, credentialsId: githubCredentialsId
-            sh "git checkout -q ${commit}"
-
-            withCredentials([[$class: "UsernamePasswordMultiBinding", credentialsId: awsCredentialsId, passwordVariable: "AWS_SECRET_ACCESS_KEY", usernameVariable: "AWS_ACCESS_KEY_ID"]]) {
-                wrap([$class: "AnsiColorBuildWrapper"]) {
-                    sh "cdflow deploy ${env} ${version}"
+        stage ("Deploy to aslive") {
+            when {
+                branch "master"
+            }
+            steps {
+                container('cdflow') {
+                    sh "cdflow deploy aslive ${version}"
                 }
+            }
+        }
+        stage ("Deploy to live") {
+            when {
+                branch "master"
+            }
+            steps {
+                container('cdflow') {
+                    sh "cdflow deploy live ${version}"
+                }
+            }
+        }
+    }
+    post {
+        failure {
+            script {
+                shared.notifySlack("FAILURE", "#%{team}-team-alerts")
+            }
+        }
+        fixed {
+            script {
+                shared.notifySlack("SUCCESS", "#%{team}-team-alerts")
             }
         }
     }
 }
 
-def checkoutPlatformConfig() {
-    checkout([
-        $class: 'GitSCM',
-        branches: [[name: '*/master']],
-        doGenerateSubmoduleConfigurations: false,
-        extensions: [[
-            $class: 'RelativeTargetDirectory',
-            relativeTargetDir: "./platform-config"
-        ]],
-        submoduleCfg: [],
-        userRemoteConfigs: [[
-            credentialsId: 'github-credentials',
-            url: "https://github.com/mergermarket/%{account_prefix}-platform-config"
-        ]]
-    ])
+// reusable code
+def test() {
+    checkout scm
+    // sh "./test.sh"
 }
