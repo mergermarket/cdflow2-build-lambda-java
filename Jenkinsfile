@@ -10,9 +10,8 @@ pipeline {
         disableConcurrentBuilds()
     }
     agent {
-        kubernetes {
-            label shared.getNodeLabel(env.JOB_NAME)
-            yaml shared.getPodTemplate(env.JOB_NAME)
+        node {
+            label "swarm2"
         }
     }
     environment {
@@ -23,9 +22,7 @@ pipeline {
     stages {
         stage ("Test") {
             steps {
-                container('cdflow') {
-                    test()
-                }
+                test()
             }
         }
         stage ("Release") {
@@ -33,13 +30,11 @@ pipeline {
                 branch "master"
             }
             steps {
-                container('cdflow') {
-                    script {
-                        shared.checkoutPlatformConfig("%{account_prefix}-platform-config")
-                        version = shared.getVersion(env.BUILD_NUMBER)
-                    }
-                    sh "cdflow release --platform-config ./platform-config ${version}"
+                script {
+                    shared.checkoutPlatformConfig("%{account_prefix}-platform-config")
+                    version = shared.getVersion(env.BUILD_NUMBER)
                 }
+                sh "cdflow release --platform-config ./platform-config ${version}"
             }
         }
         stage ("Deploy to aslive") {
@@ -47,9 +42,7 @@ pipeline {
                 branch "master"
             }
             steps {
-                container('cdflow') {
-                    sh "cdflow deploy aslive ${version}"
-                }
+                sh "cdflow deploy aslive ${version}"
             }
         }
         stage ("Deploy to live") {
@@ -57,9 +50,7 @@ pipeline {
                 branch "master"
             }
             steps {
-                container('cdflow') {
-                    sh "cdflow deploy live ${version}"
-                }
+                sh "cdflow deploy live ${version}"
             }
         }
     }
