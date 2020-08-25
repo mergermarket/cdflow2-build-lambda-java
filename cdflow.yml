@@ -1,4 +1,0 @@
-account-scheme-url: s3://acuris-account-schemes/%{account_prefix}.json
-type: infrastructure
-team: %{team}
-terraform-version: 0.12.18
