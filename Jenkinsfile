@@ -51,12 +51,12 @@ pipeline {
     post {
         failure {
             script {
-                shared.notifySlack("FAILURE", "#%{team}-team-alerts")
+                shared.notifyTeams('FAILED', shared.teamsWebhooks('#%{team}').alerts)
             }
         }
         fixed {
             script {
-                shared.notifySlack("SUCCESS", "#%{team}-team-alerts")
+                shared.notifyTeams('SUCCESS', shared.teamsWebhooks('#%{team}').alerts)
             }
         }
     }
