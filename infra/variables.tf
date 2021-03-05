@@ -1,4 +1,4 @@
 variable "release" {
-  type        = "map"
+  type        = map
   description = "Metadata about the release"
 }
