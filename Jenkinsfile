@@ -14,7 +14,7 @@ pipeline {
 //    }
     stages {
         stage ("Release") {
-            script {
+            steps {
                 sh 'echo "this jenkins job does not do anything yet"'
             }
         }
