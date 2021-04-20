@@ -12,10 +12,13 @@ pipeline {
     agent none
 //    environment {
 //    }
-//    stages {
-//        stage ("Release") {
-//        }
-//    }
+    stages {
+        stage ("Release") {
+            script {
+                sh 'echo "this jenkins job does not do anything yet"'
+            }
+        }
+    }
     post {
         failure {
             script {
