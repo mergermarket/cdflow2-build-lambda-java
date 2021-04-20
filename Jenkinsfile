@@ -9,9 +9,7 @@ pipeline {
         ansiColor('xterm')
         disableConcurrentBuilds()
     }
-    agent none
-//    environment {
-//    }
+    agent { node { label "swarm2" } }
     stages {
         stage ("Release") {
             steps {
