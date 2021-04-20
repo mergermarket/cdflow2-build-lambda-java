@@ -51,12 +51,12 @@ pipeline {
     post {
         failure {
             script {
-                shared.notifyTeams('FAILED', shared.teamsWebhooks('%{team}').alerts)
+                shared.notifyTeams('FAILED', shared.teamsWebhooks('tim').alerts)
             }
         }
         fixed {
             script {
-                shared.notifyTeams('SUCCESS', shared.teamsWebhooks('%{team}').alerts)
+                shared.notifyTeams('SUCCESS', shared.teamsWebhooks('tim').alerts)
             }
         }
     }
