@@ -10,12 +10,12 @@ pipeline {
         disableConcurrentBuilds()
     }
     agent none
-    environment {
-    }
-    stages {
-        stage ("Release") {
-        }
-    }
+//    environment {
+//    }
+//    stages {
+//        stage ("Release") {
+//        }
+//    }
     post {
         failure {
             script {
