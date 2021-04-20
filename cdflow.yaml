@@ -3,6 +3,6 @@ config:
     image: mergermarket/cdflow2-config-acuris
     params:
         account_prefix: timgroup
-        team: %{team}
+        team: tim
 terraform:
     image: hashicorp/terraform:0.13.0
